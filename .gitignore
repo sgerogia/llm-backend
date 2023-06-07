@@ -1,0 +1,12 @@
+# Virtual environment
+venv/
+
+# Python
+.pytest_cache/
+__pycache__/
+
+# IDE files
+*.iml
+
+# Unit testing files
+openai_key.txt
