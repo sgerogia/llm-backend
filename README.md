@@ -58,7 +58,7 @@ After installation, before you make any code changes, activate the virtual envir
 ## Testing the system
 
 The best way is to use the end-to-end environment provided by [Tilt][6].  
-The environment is composed by the [chatbot-ui frontend][7] and the [llm-backend service][8], checked out side-by-side on your machine. 
+The environment is composed by the [chatbot-ui frontend][7] and the [llm-backend service][8], **checked out side-by-side on your machine**. 
 
 After installing Tilt, from inside the `llm-backend` directory run `OPENAI_KEY_BASE64=<YOUR_OPENAI_API_KEY_IN_BASE64> tilt up`.  
 This will start the service and the UI client.  
