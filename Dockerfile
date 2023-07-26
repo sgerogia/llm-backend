@@ -1,5 +1,10 @@
 # Use an official Python runtime as a parent image
-FROM python:3.9-slim-buster
+FROM python:3.11.4-slim-bookworm
+
+# Update and install essential tooling (Make, CMake, etc)
+RUN apt-get update && \
+    apt-get install -y build-essential && \
+    apt-get install -y gcc
 
 # Set the working directory in the container to /app
 WORKDIR /app

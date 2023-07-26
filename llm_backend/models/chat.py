@@ -2,14 +2,43 @@ import json
 from dataclasses import dataclass
 from typing import List, Iterator, Union
 
-from .constants import CHAT_CHUNK_START, CHAT_STREAM_END
+from llm_backend.constants import CHAT_CHUNK_START, CHAT_STREAM_END
+
+
+@dataclass
+class Message:
+    """A message is a single utterance in an existing chat sequence. It has a role and a content."""
+    role: str
+    content: str
+
+    @classmethod
+    def from_json(cls, data):
+        """Create a Message from a JSON object or JSON string.
+        The object must have the following fields:
+        - role: str
+        - content: str
+        """
+        json_data = data
+        if isinstance(data, str):
+            json_data = json.loads(data)
+        return cls(
+            role=json_data['role'],
+            content=json_data['content'],
+        )
+
+    def to_json(self):
+        """Convert the message to a JSON object."""
+        return {
+            "role": self.role,
+            "content": self.content,
+        }
 
 
 @dataclass
 class ChatCompletionRequest:
     """Dataclass for chat completion request"""
     model: str
-    messages: List[str]
+    messages: List[Message]
     stream: bool
     temperature: float
 
@@ -18,7 +47,7 @@ class ChatCompletionRequest:
         """Create a ChatCompletionRequest from a JSON object.
         The object must have the following fields:
         - model: str
-        - messages: list of str
+        - messages: list of Message
         - stream: bool (optional, default False)
         - temperature: float (optional, default 1)
         """
@@ -33,11 +62,15 @@ class ChatCompletionRequest:
         # logit_bias = completionReq.get('logit_bias', {})
         # user = completionReq.get('user', '')
 
+        json_data = data
+        if isinstance(data, str):
+            json_data = json.loads(data)
         return cls(
-            model=data['model'],
-            messages=data['messages'],
-            stream=data.get('stream', False),
-            temperature=data.get('temperature', 1),
+            model=json_data['model'],
+            messages=[Message.from_json(msg) for msg in json_data['messages']],
+            stream=json_data.get('stream', False),
+            # default value == very focused
+            temperature=json_data.get('temperature', 0.1),
         )
 
 
@@ -68,35 +101,6 @@ class Delta:
         return {
             "content": self.content,
             "role": self.role,
-        }
-
-
-@dataclass
-class Message:
-    """A message is a single utterance in a chat. It has a role and a content."""
-    role: str
-    content: str
-
-    @classmethod
-    def from_json(cls, data):
-        """Create a Message from a JSON object or JSON string.
-        The object must have the following fields:
-        - role: str
-        - content: str
-        """
-        json_data = data
-        if isinstance(data, str):
-            json_data = json.loads(data)
-        return cls(
-            role=json_data['role'],
-            content=json_data['content'],
-        )
-
-    def to_json(self):
-        """Convert the message to a JSON object."""
-        return {
-            "role": self.role,
-            "content": self.content,
         }
 
 
@@ -238,17 +242,21 @@ class ChatCompletionResponse:
     _event_iterator: Iterator[str] = None
 
     @classmethod
-    def from_string_iterator(cls, iterator: Iterator[str]):
+    def from_string_iterator(cls, iterator: Iterator[str], model_override: str = None):
         """Create a ChatCompletionResponse from a string iterator.
         Sets the streaming flag to True and makes the Chat items available via the iterator.
+
+        :param iterator over a sequence of chat chunks
+        :param model_override (optional) a value for the 'model' field, to override the one coming from the data
         """
         return cls(
             streaming=True,
-            _event_iterator=iterator
+            _event_iterator=iterator,
+            model=model_override,
         )
 
     @classmethod
-    def from_json(cls, data):
+    def from_json(cls, data, model_override: str = None):
         """Create a ChatCompletionResponse from a JSON object or a JSON string.
         This method populates an object with the following fields (i.e. they are not empty/nil):
         - usage: ChatUsage
@@ -258,6 +266,9 @@ class ChatCompletionResponse:
         - created: int
         - model: str
         - choices: list of Chat
+
+        :param data a JSON object or JSON string
+        :param model_override (optional) a value for the 'model' field, to override the one coming from the data
         """
         json_data = data
         if isinstance(data, str):
@@ -272,7 +283,7 @@ class ChatCompletionResponse:
             id=json_data['id'],
             object=json_data['object'],
             created=json_data['created'],
-            model=json_data['model'],
+            model=model_override if model_override is not None else json_data['model'],
             _choices=choices,
         )
 
@@ -314,7 +325,8 @@ class ChatCompletionResponse:
                 raise StopIteration
             data = json.loads(data)
 
-        resp = ChatCompletionResponse.from_json(data)
+        # the model name may have already been set
+        resp = ChatCompletionResponse.from_json(data, model_override=self.model)
 
         # if initialising lazily, populate the fields
         if self.id is None:

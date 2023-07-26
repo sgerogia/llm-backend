@@ -22,14 +22,28 @@ spec:
       labels:
         app: llm-backend
     spec:
+      volumes:
+        - name: llama-volume
+          persistentVolumeClaim:
+            claimName: llama-pvc
       containers:
         - name: llm-backend
           image: "llm-example/llm-backend:latest"
+          resources:
+            requests:
+              memory: "4Gi"
           ports:
             - containerPort: 5000
+          volumeMounts:
+            - name: llama-volume
+              mountPath: /etc/models/llama
           env:
             - name: LOG_LEVEL
               value: DEBUG
+            - name: CHAT_CONTROLLER
+              value: {chat_controller}
+            - name: LLAMA_MODEL_FILE
+              value: /etc/models/llama/{llama_model_file}
             - name: OPENAI_API_KEY
               valueFrom:
                 secretKeyRef:

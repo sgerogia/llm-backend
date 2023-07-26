@@ -37,15 +37,21 @@ The service is written in Python using [Connexion][3] and [SQLAlchemy][4].
 
 ## Installation
 
-After cloning the repository, create a virtual environment and install the dependencies.    
+After cloning the repository, create a virtual environment and install the dependencies.  
+Before running, read the section on [custom models installation][9] and choose the right value for the flag 
+before `pip install -r requirements.txt`.  
 ```bash
 make install
 ```
 
-Run the tests to confirm the installation. You will need to create a file name `openai_key.txt` in the root directory,
-containing a valid OpenAI API key.  
+Run the tests to confirm the installation. You will need to pass as env. variables:  
+* a valid OpenAI API key
+* an absolute path to a Llama-compatible model file.
+
+See below for instructions on *Working with other models*. 
+
 ```bash
-make test
+OPENAI_API_KEY=YOUR_OPENAI_KEY LLAMA_MODEL_FILE=/path/to/llama_file.bin make test
 ```
 
 ## Making code changes
@@ -70,10 +76,20 @@ You can monitor the service logs from Tilt's UI at `http://localhost:10350/r/(Ti
  
 ## Environment variables
 
-| Environment Variable              | Default value                  | Description                                                                                                                               |
-|-----------------------------------|--------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------|
-| OPENAI_API_KEY                    |                                | The default API key used for authentication with OpenAI                                                                                   |
-| LOG_LEVEL                         | `INFO`                         | The logger's log level                                                                                                                    |
+| Environment Variable | Default value | Description                                                                                                                                                 |
+|----------------------|---------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| LLAMA_MODEL_FILE     |               | Absolute path to the file location of the Llama-compatible model file. Model could be quantized (2, 3, 4,... bit). When set, enables the Llama controllers. |
+| LLAMA_CONTEXT_SIZE   | `4096`        | Size of the Llama model input context window ("short-term memory") in tokens.                                                                               |
+| OPENAI_API_KEY       |               | The default API key used for authentication with OpenAI. When set, enables the OpenAI controllers.                                                          |
+| LOG_LEVEL            | `INFO`        | The logger's log level                                                                                                                                      |
+
+
+## Working with other models
+
+You can download and work with other models.  
+The details for each supported type are below.
+
+* [Llama-compatible models](./LLAMA_MODELS.md)
 
 
 
@@ -85,3 +101,4 @@ You can monitor the service logs from Tilt's UI at `http://localhost:10350/r/(Ti
     [6]: https://tilt.dev/
     [7]: https://github.com/sgerogia/chatbot-ui
     [8]: https://github.com/sgerogia/llm-backend
+    [9]: ./MODELS.md

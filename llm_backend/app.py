@@ -1,17 +1,10 @@
-import os
-
 import connexion
-import openai
+
+from llm_backend.controllers.chat import init as init_chat_controller
+from llm_backend.controllers.models import init as init_models_controller
 
 
-def create_app(logger):
-
-    key = os.environ.get('OPENAI_API_KEY')
-    if key is None:
-        logger.warn('OPENAI API key is not defined!')
-    else:
-        logger.info('Setting OPENAI API key')
-        openai.api_key = key
+def create_app(logger, params: dict):
 
     # Create the Connexion application instance
     connex_app = connexion.App('server', specification_dir='./openapi/')
@@ -22,6 +15,16 @@ def create_app(logger):
 
     # Get the underlying Flask app instance
     app = connex_app.app
+
+    # Initialise controllers
+    init_chat_controller(
+        log=logger,
+        params=params,
+    )
+    init_models_controller(
+        log=logger,
+        params=params,
+    )
 
     logger.info('Created Flask app')
     return app

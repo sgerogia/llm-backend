@@ -1,47 +1,45 @@
-def test_createChatCompletion_simple(set_openai_key, set_logger, client):
+import llm_backend.controllers.chat as chat
+from llm_backend.constants import MODEL_LLAMA, MODEL_OPENAI
+
+
+def test_initController_empty(openai_params, set_logger):
     # arrange
-    completionReq = {
-        "model": "gpt-3.5-turbo",
-        "messages": [
-            {"role": "system", "content": "You are ChatGPT, a large language model trained by OpenAI. Follow the user\'s instructions carefully. Respond using plain text."},
-            {"role": "user", "content": "Just say 'Hello!' No other words are needed."},
-        ],
-        "stream": False,
-    }
+    chat._chat_completion_controller = None
 
     # act
-    res = client.post('/v1/chat/completions', json=completionReq, buffered=True)
+    chat.init(
+        log=set_logger,
+        params=openai_params,
+    )
 
     # assert
-    assert res.status_code == 200
-    assert res.headers['Content-Type'] == 'application/json'
-    assert res.json['object'] == 'chat.completion'
-    choices = res.json['choices']
-    assert choices[0]['message']['content'] == 'Hello!'
-    assert res.json['object'] == 'chat.completion'
+    assert isinstance(chat._chat_completion_controllers[MODEL_OPENAI], chat.OpenaiChatCompletionController)
 
 
-def test_createChatCompletion_stream(set_openai_key, set_logger, client):
+def test_initController_openai(openai_params, set_logger):
     # arrange
-    completionReq = {
-        "model": "gpt-3.5-turbo",
-        "messages": [
-            {"role": "system", "content": "You are ChatGPT, a large language model trained by OpenAI. Follow the user\'s instructions carefully. Respond using plain text."},
-            {"role": "user", "content": "Just say 'Hello!' No other words are needed."},
-        ],
-        "stream": True,
-    }
+    chat._chat_completion_controller = None
 
     # act
-    res = client.post('/v1/chat/completions', json=completionReq, buffered=True)
+    chat.init(
+        log=set_logger,
+        params=openai_params,
+    )
 
     # assert
-    assert res.status_code == 200
-    assert 'text/event-stream' in res.headers['Content-Type']
-    assert len(res.response) > 0
-    # pseudo-iteration of responses
-    assert b'"choices": [{"index": 0, "finish_reason": null, "message": null, "delta": {"content": "", "role": "assistant"}}], "usage": ""}\n\n' in res.response[0]
-    assert b'"choices": [{"index": 0, "finish_reason": null, "message": null, "delta": {"content": "Hello", "role": null}}], "usage": ""}\n\n' in res.response[1]
-    assert b'"choices": [{"index": 0, "finish_reason": null, "message": null, "delta": {"content": "!", "role": null}}], "usage": ""}\n\n' in res.response[2]
-    assert b'"choices": [{"index": 0, "finish_reason": "stop", "message": null, "delta": {"content": null, "role": null}}], "usage": ""}\n\n' in res.response[3]
-    assert b'data: [DONE]\n\n' == res.response[4]
+    assert isinstance(chat._chat_completion_controllers[MODEL_OPENAI], chat.OpenaiChatCompletionController)
+
+
+def test_initController_llama(set_logger, llama_params):
+    # arrange
+    chat._chat_completion_controller = None
+
+    # act
+    chat.init(
+        log=set_logger,
+        params=llama_params,
+    )
+
+    # assert
+    assert isinstance(chat._chat_completion_controllers[MODEL_LLAMA], chat.LlamaChatCompletionController)
+
