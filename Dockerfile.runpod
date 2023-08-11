@@ -1,0 +1,51 @@
+# Dockerfile and scripts based on TheBlokeAI
+# See https://github.com/TheBlokeAI/dockerLLM/blob/main/cuda11.8.0-ubuntu22.04-oneclick/Dockerfile
+ARG CUDA_VERSION="11.8.0"
+ARG CUDNN_VERSION="8"
+ARG UBUNTU_VERSION="22.04"
+ARG DOCKER_FROM=thebloke/cuda$CUDA_VERSION-ubuntu$UBUNTU_VERSION-textgen:latest
+
+# Base image
+FROM $DOCKER_FROM as base
+
+ARG APTPKGS="zsh wget tmux tldr nvtop vim neovim curl rsync net-tools less iputils-ping 7zip zip unzip"
+
+# Install useful command line utility software
+RUN apt-get update -y && \
+    apt-get install -y --no-install-recommends $APTPKGS && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    # Set up git to support LFS, and to store credentials; useful for Huggingface Hub
+    git config --global credential.helper store && \
+    git lfs install && \
+    # Install Oh My Zsh for better command line experience: https://github.com/ohmyzsh/ohmyzsh
+    bash -c "ZSH=/root/ohmyzsh $(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+
+# Add some config files for a nicer command line setup
+COPY ./docker-runpod/conf-files/ /root
+# Set default shell to ZSH
+COPY ./docker-runpod/etc/passwd /etc/passwd
+
+COPY --chmod=755 ./docker-runpod/scripts /root/scripts
+
+# Set the working directory in the container to /app
+WORKDIR /app
+
+# Add our application files into the container at /app
+COPY ./llm_backend /app/llm_backend
+COPY ./server.py /app/
+COPY ./config.py /app/
+COPY ./requirements.txt /app/
+COPY ./openapi /app/openapi
+
+# Install any needed packages specified in requirements.txt and gunicorn WSGI HTTP Server
+# CMake is used to compile the Llama-CPP code
+RUN CMAKE_ARGS="-DLLAMA_CUBLAS=on" FORCE_CMAKE=1 \
+    pip install -r requirements.txt && \
+    pip install gunicorn
+
+# Make port 5000 available to the world outside this container
+EXPOSE 5000
+
+# Finish initialisation and start the pod
+CMD ["/root/scripts/start-pod.sh"]

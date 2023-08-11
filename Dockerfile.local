@@ -19,5 +19,5 @@ RUN pip install -r requirements.txt && \
 # Make port 5000 available to the world outside this container
 EXPOSE 5000
 
-# Run the application:
-CMD ["gunicorn", "-b", ":5000", "--log-level", "debug", "--access-logfile", "-", "--error-logfile", "-", "server:flask_app"]
+# Run the application
+CMD ["gunicorn", "-b", ":5000", "--log-level", "debug", "--access-logfile", "-", "--error-logfile", "-", "server:flask_app", "--timeout", "120"]

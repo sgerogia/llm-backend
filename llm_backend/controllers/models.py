@@ -119,6 +119,7 @@ class LlamaModelsController(ModelsController):
         )
 
     def fetchModels(self) -> List[Model]:
+        logger.debug('Fetching models from Llama')
         return [self._llama_model]
 
     def getModel(self, id: str) -> Model:

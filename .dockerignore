@@ -18,3 +18,7 @@ openai_key.txt
 # Images
 img/
 
+# K8s & Tilt files
+k8s/
+Tiltfile
+

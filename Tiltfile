@@ -9,7 +9,7 @@ openai_key=os.environ.get('OPENAI_KEY_BASE64', '')
 # Change the following as required
 chat_controller='llama'
 llama_model_path='/Users/sgerogia/src/github.com/fredi-python/llama.cpp/models/'
-llama_model_file='ggml-vicuna-13B-1.1-q4_0.bin'
+llama_model_file='llama-2-13b-chat.ggmlv3.q2_K.bin'
 
 # --- Execution ---
 
@@ -31,14 +31,14 @@ yaml = str(raw_yaml).format(
     chat_controller=chat_controller,
     llama_model_file=llama_model_file,
 )
-k8s_yaml(namespace_inject(blob(yaml), ns))
+#k8s_yaml(namespace_inject(blob(yaml), ns))
 
 
 print("📢 Applying chatbot-ui K8s resources")
 raw_yaml = read_file(chatbot_ui_folder + '/k8s/chatbot-ui.yaml')
 yaml = str(raw_yaml).format(
-    api_host='http://' + backend_host + ':8080',
-    #api_host='https://api.openai.com',
+    #api_host='http://' + backend_host + ':8080',
+    api_host='https://hgs9btik9aa48g-5000.proxy.runpod.net',
     default_model='gpt-3.5-turbo',
     system_prompt='You are S.T.R.A.T.O.S, a large language model trained to make the world a better place. Follow the user`s instructions carefully. Respond using markdown.',
     temperature='1',
@@ -48,10 +48,10 @@ k8s_yaml(namespace_inject(blob(yaml), ns))
 
 
 print("📢 Building docker images")
-docker_build('llm-example/llm-backend', '.', dockerfile='Dockerfile', ignore=['README.md', '.gitignore'])
+#docker_build('llm-example/llm-backend', '.', dockerfile='Dockerfile.local', ignore=['README.md', '.gitignore'])
 docker_build('llm-example/chatbot-ui', chatbot_ui_folder, dockerfile=chatbot_ui_folder + '/Dockerfile', ignore=['README.md', '.gitignore'])
 
 
 print("📢 Launching K8s resources")
-k8s_resource('llm-backend', port_forwards='5000:5000')
+#k8s_resource('llm-backend', port_forwards='5000:5000')
 k8s_resource('chatbot-ui', port_forwards='3000:3000')

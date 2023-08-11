@@ -66,8 +66,13 @@ After installation, before you make any code changes, activate the virtual envir
 The best way is to use the end-to-end environment provided by [Tilt][6].  
 The environment is composed by the [chatbot-ui frontend][7] and the [llm-backend service][8], **checked out side-by-side on your machine**. 
 
-After installing Tilt, from inside the `llm-backend` directory run `OPENAI_KEY_BASE64=<YOUR_OPENAI_API_KEY_IN_BASE64> tilt up`.  
+After installing Tilt  
+* edit the Tiltfile to point to the correct paths for the `llm-backend` and `chatbot-ui` directories, and
+* the correct location for the Llama model file (if you want to use it).
+
+Then,from inside the `llm-backend` directory run `OPENAI_KEY_BASE64=<YOUR_OPENAI_API_KEY_IN_BASE64> tilt up`.
 This will start the service and the UI client.  
+
 Then open your browser at `http://localhost:3000` to see the UI client.  
 Add a dummy `OpenAI API key` in the corresponding bottom-left field to enable the interface.  
 ![Dummy OpenAI key](./img/dummy_key.png)
@@ -90,6 +95,10 @@ You can download and work with other models.
 The details for each supported type are below.
 
 * [Llama-compatible models](./LLAMA_MODELS.md)
+
+Unless your local machine has a strong GPU, your attempts to query the model running locally will time out.
+
+For this reason it is recommended to run `llm-backend` in a GPU cloud instance, and point the `chatbot-ui` to it.
 
 
 
