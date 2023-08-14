@@ -1,3 +1,5 @@
+from logging import Logger
+
 import connexion
 import json
 import logging
@@ -5,7 +7,6 @@ import openai
 import os
 from flask import Response, stream_with_context
 from llama_cpp import Llama, ChatCompletionMessage
-from logging import Logger
 
 from llm_backend.constants import MODEL_OPENAI, MODEL_LLAMA, MODEL_CONTEXT_SIZE, PARAM_LLAMA_MODEL, \
     PARAM_LLAMA_CONTEXT_SIZE, PARAM_OPENAI_KEY
@@ -114,7 +115,7 @@ class LlamaChatCompletionController(ChatCompletionController):
                 n_ctx=self._ctx_size,
                 use_mlock=True,
                 # FIXME: The following can crash the process on a machine without GPU
-                # n_gpu_layers=1,
+                n_gpu_layers=4,
             )
 
 

@@ -12,7 +12,7 @@ mkdir -p $VOLUME/models
 # Start build of llama-cpp-python
 if [[ ! -f "$VOLUME/.built.llama-cpp-python" ]]; then
   echo "Building llama-cpp-python"
-	"$SCRIPTDIR"/build-llama-cpp-python.sh $VOLUME >>$VOLUME/logs/build-llama-cpp-python.log 2>&1
+	"$SCRIPTDIR"/build-llama-cpp-python.sh "$VOLUME" >>$VOLUME/logs/build-llama-cpp-python.log 2>&1
 else
   echo "Skipping llama-cpp-python build"
 fi
@@ -50,6 +50,9 @@ if [[ $MODEL_NAME == "" ]]; then
 else
   FILE="$VOLUME/models/$MODEL_NAME"
 fi
+
+# Increase memory limits to allow keeping model in memory
+ulimit -l unlimited
 
 # Env. variables for our server
 export LOG_LEVEL="DEBUG"
