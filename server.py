@@ -1,10 +1,10 @@
 import logging
 import os
-
 from pythonjsonlogger import jsonlogger
 
 from llm_backend import app
-from llm_backend.constants import ENV_LOG_LEVEL, ENV_OPENAI_API_KEY, ENV_LLAMA_MODEL_FILE, ENV_LLAMA_CONTEXT_SIZE
+from llm_backend.constants import ENV_LOG_LEVEL, ENV_OPENAI_API_KEY, ENV_LLAMA_MODEL_FILE, ENV_LLAMA_CONTEXT_SIZE, \
+    PARAM_OPENAI_KEY, PARAM_LLAMA_MODEL, PARAM_LLAMA_CONTEXT_SIZE
 
 
 def create_logger():
@@ -27,9 +27,9 @@ logger = create_logger()
 def _load_params() -> dict:
     logger.info("Loading environment variables")
     params = {
-        app.PARAM_OPENAI_KEY: os.environ.get(ENV_OPENAI_API_KEY),
-        app.PARAM_LLAMA_MODEL: os.environ.get(ENV_LLAMA_MODEL_FILE),
-        app.PARAM_LLAMA_CONTEXT_SIZE: os.environ.get(ENV_LLAMA_CONTEXT_SIZE),
+        PARAM_OPENAI_KEY: os.environ.get(ENV_OPENAI_API_KEY),
+        PARAM_LLAMA_MODEL: os.environ.get(ENV_LLAMA_MODEL_FILE),
+        PARAM_LLAMA_CONTEXT_SIZE: os.environ.get(ENV_LLAMA_CONTEXT_SIZE),
     }
 
     return params
