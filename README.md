@@ -77,11 +77,11 @@ You can monitor the service logs from Tilt's UI at `http://localhost:10350/r/(Ti
 
 
 
-    [1]: https://github.com/openai/openai-openapi
-    [2]: https://flask.palletsprojects.com/
-    [3]: https://github.com/spec-first/connexion
-    [4]: https://www.sqlalchemy.org/    
-    [5]: https://sgerogia.github.io/???????
-    [6]: https://tilt.dev/
-    [7]: https://github.com/sgerogia/chatbot-ui
-    [8]: https://github.com/sgerogia/llm-backend
+  [1]: https://github.com/openai/openai-openapi
+  [2]: https://flask.palletsprojects.com/
+  [3]: https://github.com/spec-first/connexion
+  [4]: https://www.sqlalchemy.org/    
+  [5]: https://sgerogia.github.io/???????
+  [6]: https://tilt.dev/
+  [7]: https://github.com/sgerogia/chatbot-ui
+  [8]: https://github.com/sgerogia/llm-backend
