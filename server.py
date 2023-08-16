@@ -4,7 +4,7 @@ from pythonjsonlogger import jsonlogger
 
 from llm_backend import app
 from llm_backend.constants import ENV_LOG_LEVEL, ENV_OPENAI_API_KEY, ENV_LLAMA_MODEL_FILE, ENV_LLAMA_CONTEXT_SIZE, \
-    PARAM_OPENAI_KEY, PARAM_LLAMA_MODEL, PARAM_LLAMA_CONTEXT_SIZE, MODEL_CONTEXT_SIZE
+    PARAM_OPENAI_KEY, PARAM_LLAMA_MODEL, MODEL_CONTEXT_SIZE, PARAM_LLAMA_CONTEXT_SIZE
 
 
 def create_logger():

@@ -52,12 +52,12 @@ def test_listModels_llama(llama_client, set_logger):
 
 def test_retrieveModel_openai(openai_client, set_logger):
     # act
-    res = openai_client.get('/v1/models/babbage')
+    res = openai_client.get('/v1/models/ada')
 
     # assert
     assert res.status_code == 200
     assert res.json['object'] == 'model'
-    assert res.json['id'] == 'babbage'
+    assert res.json['id'] == 'ada'
 
 
 def test_retrieveModel_llama(llama_client, set_logger):
