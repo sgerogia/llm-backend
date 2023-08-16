@@ -44,6 +44,8 @@ class LlamaModelService:
             self._llama = Llama(
                 model_path=model_file_path,
                 n_ctx=ctx_size,
+                # TODO: Experiment with various batch sizes and see how inference unit tests perform
+                n_batch=20,
                 # FIXME: The following can crash the process on a machine without GPU
                 # n_gpu_layers=1,
             )

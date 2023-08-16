@@ -2,7 +2,7 @@
 
 test:
 	. venv/bin/activate; \
-	PYTHONPATH=.:${PYTHONPATH} pytest -v
+	PYTHONPATH=.:${PYTHONPATH} pytest -v --durations=0
 
 install:
 	@echo "Creating virtual environment and installing dependencies..."
