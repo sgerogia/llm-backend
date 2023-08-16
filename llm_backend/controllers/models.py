@@ -1,15 +1,13 @@
-import logging
-import os.path
-import time
-import uuid
 from logging import Logger
+
+import logging
+import openai
 from typing import List
 
-import openai
-from llama_cpp import Llama
-
-from llm_backend.constants import MODEL_LLAMA, MODEL_OPENAI, PARAM_LLAMA_MODEL, PARAM_OPENAI_KEY
-from llm_backend.models.models import Model, ModelPermission
+from llm_backend.constants import MODEL_LLAMA, MODEL_OPENAI, PARAM_LLAMA_MODEL, PARAM_OPENAI_KEY, MODEL_CONTEXT_SIZE, \
+    PARAM_LLAMA_CONTEXT_SIZE
+from llm_backend.models.models import Model
+from llm_backend.services.llama_model_service import LlamaModelService
 from . import logger
 
 
@@ -30,7 +28,6 @@ class ModelsController:
         """Fetch a list of models.
         Descendants should override this method and implement the logic to generate the response."""
         pass
-
 
     def getModel(self, id: str) -> Model:
         """Fetch a model given its id, or None if not found.
@@ -71,9 +68,9 @@ class OpenaiModelsController(ModelsController):
 class LlamaModelsController(ModelsController):
     """Models controller that uses a local Llama-compatible model."""
 
-    _llama_model: Model = None
+    _llama_service: LlamaModelService = None
 
-    def __init__(self, log: Logger = None, model_file_path: str = None):
+    def __init__(self, log: Logger = None, model_file_path: str = None, ctx_size: int = MODEL_CONTEXT_SIZE):
         """Create a new instance of the controller and set the path of the model.
 
         :param log the logger to use
@@ -81,48 +78,14 @@ class LlamaModelsController(ModelsController):
         """
         super().__init__(log=log)
 
-        if model_file_path is None or not os.path.exists(model_file_path) or not os.path.isfile(model_file_path):
-            self._logger.error('Llama file path is not defined or is not a file!')
-            raise ValueError('Llama file path is not defined or is not a file')
-        else:
-            self._logger.info(f'Creating Llama model from file {model_file_path}')
-            self._model_name = os.path.basename(model_file_path)
-            llm = Llama(
-                model_path=model_file_path,
-            )
-            if llm is None:
-                self._logger.error(f'{model_file_path} is not a valid Llama model')
-                raise ValueError(f'{model_file_path} is not a valid Llama model')
-        self._llama_model = Model(
-            object="model",
-            id=MODEL_LLAMA,
-            owned_by="My Org",
-            parent=None,
-            permission=[
-                ModelPermission(
-                    object="model_permission",
-                    created=time.time(),
-                    id="modelperm-" + str(uuid.uuid4()),
-                    is_blocking=False,
-                    allow_view=True,
-                    allow_logprobs=True,
-                    allow_sampling=True,
-                    allow_create_engine=False,
-                    allow_fine_tuning=False,
-                    allow_search_indices=False,
-                    organization="*",
-                    group=None,
-                )
-            ],
-            created=time.time(),
-            root=None,
-        )
+        self._llama_service = LlamaModelService(log=log, model_file_path=model_file_path, ctx_size=ctx_size)
 
     def fetchModels(self) -> List[Model]:
-        return [self._llama_model]
+        logger.debug('Fetching Llama model')
+        return [self._llama_service.get_model()]
 
     def getModel(self, id: str) -> Model:
-        return self._llama_model if id == MODEL_LLAMA else None
+        return self._llama_service.get_model() if id == MODEL_LLAMA else None
 
 
 # The cached chat controller instances
@@ -144,6 +107,7 @@ def init(params: dict, log: Logger = None) -> dict:
         _model_controllers[MODEL_LLAMA] = LlamaModelsController(
             log=log,
             model_file_path=params.get(PARAM_LLAMA_MODEL),
+            ctx_size=params.get(PARAM_LLAMA_CONTEXT_SIZE)
         )
     except ValueError:
         if log is not None:

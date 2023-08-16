@@ -44,6 +44,8 @@ spec:
               value: {chat_controller}
             - name: LLAMA_MODEL_FILE
               value: /etc/models/llama/{llama_model_file}
+            - name: LLAMA_CONTEXT_SIZE
+              value: "2048"
             - name: OPENAI_API_KEY
               valueFrom:
                 secretKeyRef:

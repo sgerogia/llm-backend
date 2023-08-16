@@ -9,7 +9,7 @@ openai_key=os.environ.get('OPENAI_KEY_BASE64', '')
 # Change the following as required
 chat_controller='llama'
 llama_model_path='/Users/sgerogia/src/github.com/fredi-python/llama.cpp/models/'
-llama_model_file='ggml-vicuna-13B-1.1-q4_0.bin'
+llama_model_file='llama-2-7b-chat.ggmlv3.q2_K.bin'
 
 # --- Execution ---
 

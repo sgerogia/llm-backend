@@ -1,16 +1,16 @@
-import json
-import logging
-import os
 from logging import Logger
 
 import connexion
+import json
+import logging
 import openai
 from flask import Response, stream_with_context
-from llama_cpp import Llama, ChatCompletionMessage
+from llama_cpp import ChatCompletionMessage
 
 from llm_backend.constants import MODEL_OPENAI, MODEL_LLAMA, MODEL_CONTEXT_SIZE, PARAM_LLAMA_MODEL, \
     PARAM_LLAMA_CONTEXT_SIZE, PARAM_OPENAI_KEY
 from llm_backend.models.chat import ChatCompletionRequest, ChatCompletionResponse, ChatUsage, Chat
+from llm_backend.services.llama_model_service import LlamaModelService
 from . import logger
 
 
@@ -90,9 +90,8 @@ class LlamaChatCompletionController(ChatCompletionController):
     """Chat completion controller that uses a local Llama-compatible model.
     Internally it uses the Llama-Python bindings library."""
 
-    _llm: Llama = None
+    _llama_service: LlamaModelService = None
     _ctx_size: int = 0
-    _model_name: str = None
 
     def __init__(self, log: Logger = None, model_file_path: str = None, ctx_size: int = MODEL_CONTEXT_SIZE):
         """Create a new instance of the controller and set the path of the model.
@@ -103,19 +102,7 @@ class LlamaChatCompletionController(ChatCompletionController):
         """
         super().__init__(log=log)
 
-        if model_file_path is None or not os.path.exists(model_file_path) or not os.path.isfile(model_file_path):
-            self._logger.error('Llama file path is not defined or is not a file!')
-            raise ValueError('Llama file path is not defined or is not a file')
-        else:
-            self._ctx_size = ctx_size if ctx_size is not None else MODEL_CONTEXT_SIZE
-            self._logger.info(f'Creating Llama model from file {model_file_path} with context size {self._ctx_size}')
-            self._model_name = os.path.basename(model_file_path)
-            self._llm = Llama(
-                model_path=model_file_path,
-                n_ctx=self._ctx_size,
-                # FIXME: The following can crash the process on a machine without GPU
-                # n_gpu_layers=1,
-            )
+        self._llama_service = LlamaModelService(log=log, model_file_path=model_file_path, ctx_size=ctx_size)
 
 
     def createChatCompletion(self, request: ChatCompletionRequest) -> ChatCompletionResponse:
@@ -129,7 +116,7 @@ class LlamaChatCompletionController(ChatCompletionController):
 
         messages = [ChatCompletionMessage(role=msg.role, content=msg.content) for msg in request.messages]
 
-        compl = self._llm.create_chat_completion(
+        compl = self._llama_service.create_chat_completion(
             messages=messages,
             stream=request.stream,
             temperature=request.temperature,
@@ -140,7 +127,7 @@ class LlamaChatCompletionController(ChatCompletionController):
             resp = ChatCompletionResponse(
                 streaming=True,
                 _event_iterator=compl,
-                model=self._model_name
+                model=self._llama_service.get_model_name()
             )
         else:
             resp = ChatCompletionResponse(
@@ -148,7 +135,7 @@ class LlamaChatCompletionController(ChatCompletionController):
 
                 id=compl['id'],
                 created=compl['created'],
-                model=self._model_name,
+                model=self._llama_service.get_model_name(),
                 object=compl['object'],
                 usage=ChatUsage(
                     prompt_tokens=compl['usage']['prompt_tokens'],

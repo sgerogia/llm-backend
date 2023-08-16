@@ -29,7 +29,7 @@ def _load_params() -> dict:
     params = {
         PARAM_OPENAI_KEY: os.environ.get(ENV_OPENAI_API_KEY),
         PARAM_LLAMA_MODEL: os.environ.get(ENV_LLAMA_MODEL_FILE),
-        PARAM_LLAMA_CONTEXT_SIZE: os.environ.get(ENV_LLAMA_CONTEXT_SIZE),
+        PARAM_LLAMA_CONTEXT_SIZE: int(os.environ.get(ENV_LLAMA_CONTEXT_SIZE, 2048)),
     }
 
     return params
