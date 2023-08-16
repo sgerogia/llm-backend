@@ -2,7 +2,8 @@
 echo "Runpod llm-backend: Pod started"
 
 SCRIPTDIR=/root/scripts
-VOLUME=/app
+VOLUME=/workspace
+WORKDIR=/app
 
 # If a volume is already defined, $VOLUME will already exist
 # If a volume is not being used, we'll still use /app to ensure everything is in a known place.
@@ -51,9 +52,6 @@ else
   FILE="$VOLUME/models/$MODEL_NAME"
 fi
 
-# Increase memory limits to allow keeping model in memory
-ulimit -l unlimited
-
 # Env. variables for our server
 export LOG_LEVEL="DEBUG"
 export LLAMA_MODEL_FILE="$FILE"
@@ -66,7 +64,7 @@ echo "- Model file: $LLAMA_MODEL_FILE"
 echo "- Context size: $LLAMA_CONTEXT_SIZE"
 echo "- OpenAI API key: ...${OPENAI_API_KEY: -4}"
 gunicorn -b :5000 \
-  --chdir "$VOLUME" \
+  --chdir "$WORKDIR" \
   --log-level debug \
   --access-logfile $VOLUME/logs/gunicorn-access.log \
   --error-logfile $VOLUME/logs/gunicorn-error.log \

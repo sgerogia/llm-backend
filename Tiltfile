@@ -38,7 +38,7 @@ print("📢 Applying chatbot-ui K8s resources")
 raw_yaml = read_file(chatbot_ui_folder + '/k8s/chatbot-ui.yaml')
 yaml = str(raw_yaml).format(
     #api_host='http://' + backend_host + ':8080',
-    api_host='https://5ol77mk6qv6l4q-5000.proxy.runpod.net',
+    api_host='https://gf69zjzw9flulx-5000.proxy.runpod.net',
     default_model='gpt-3.5-turbo',
     system_prompt='You are S.T.R.A.T.O.S, a large language model trained to make the world a better place. Follow the user`s instructions carefully. Respond using markdown.',
     temperature='1',

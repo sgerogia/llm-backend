@@ -44,8 +44,11 @@ class LlamaModelService:
             self._llama = Llama(
                 model_path=model_file_path,
                 n_ctx=ctx_size,
-                # FIXME: The following can crash the process on a machine without GPU
-                # n_gpu_layers=1,
+                # TODO: Experiment with various batch sizes and see how inference unit tests perform
+                n_batch=10,
+                # FIXME: The following will crash the process on a machine without GPU (e.g. K8s) if uncommented
+                # When running on a machine with GPU, note the log `offloaded X/Y layers to GPU` to gage the right value
+                n_gpu_layers=40,
             )
             if self._llama is None:
                 self._logger.error(f'{model_file_path} is not a valid Llama model')
